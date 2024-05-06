@@ -32,7 +32,7 @@ endif
 
 ifdef AJA_RDMA
 ifeq ($(NVIDIA_SRC_DIR),)
-	NVIDIA_SRC_DIR := $(shell find /usr/src/nvidia-* -name nv-p2p.h 2>/dev/null|head -1|xargs dirname 2>/dev/null)
+	NVIDIA_SRC_DIR := $(shell find /usr/src/nvidia* -name nv-p2p.h 2>/dev/null|head -1|xargs dirname 2>/dev/null)
 endif
 ifeq ($(NVIDIA_SRC_DIR),)
 	NVIDIA_SRC_DIR := $(shell find /usr/src/linux-* -name nv-p2p.h 2>/dev/null|head -1|xargs dirname 2>/dev/null)
@@ -40,12 +40,14 @@ endif
 	EXTRA_CFLAGS += -I$(NVIDIA_SRC_DIR) -DAJA_RDMA=$(AJA_RDMA)
 ifdef AJA_IGPU
 	EXTRA_CFLAGS += -DAJA_IGPU=$(AJA_IGPU)
+	NVIDIA_P2P_MODULE = nvidia-p2p.ko
 else
+	NVIDIA_P2P_MODULE = nvidia.ko
+endif
 ifeq ($(NVIDIA_SYMVERS),)
-	NVIDIA_KO ?= $(shell find /lib/modules/$(KVERSION)/ -name 'nvidia*.ko'|grep -P 'nvidia(_[0-9]+)?.ko'|head -1)
+	NVIDIA_KO ?= $(shell find /lib/modules/$(KVERSION)/ -name $(NVIDIA_P2P_MODULE) | head -1)
 	NVIDIA_GEN_SYMVERS := ./nvidia-ko-to-module-symvers $(NVIDIA_KO) $(DIR)/nvidia.symvers
 	NVIDIA_SYMVERS := $(DIR)/nvidia.symvers
-endif
 endif
 endif
 
@@ -207,12 +209,8 @@ default: all
 	@echo linux distro flags: '$(DISTRO_INFO)'
 	@echo lib: $(LIB)
 ifdef AJA_RDMA
-ifdef AJA_IGPU
-	$(MAKE) -C $(KDIR) M=$(A_LINUX_DRIVER_PATH) DRIVERDIR=$(A_LINUX_DRIVER_PATH) modules
-else
 	${NVIDIA_GEN_SYMVERS}
 	$(MAKE) -C $(KDIR) M=$(A_LINUX_DRIVER_PATH) DRIVERDIR=$(A_LINUX_DRIVER_PATH) modules KBUILD_EXTRA_SYMBOLS=$(NVIDIA_SYMVERS)
-endif
 else
 	$(MAKE) -C $(KDIR) M=$(A_LINUX_DRIVER_PATH) DRIVERDIR=$(A_LINUX_DRIVER_PATH) modules
 endif
