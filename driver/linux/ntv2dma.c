@@ -3085,11 +3085,7 @@ static int dmaPageLock(ULWord deviceNumber, PDMA_PAGE_BUFFER pBuffer,
 		ULWord64 rdmaAddress = address & GPU_PAGE_MASK;
 		ULWord64 rdmaOffset = address & GPU_PAGE_OFFSET;
 		ULWord64 rdmaLen = size;
-#ifdef AJA_IGPU		
 		ULWord64 rdmaAlignedLen = (rdmaOffset + rdmaLen + GPU_PAGE_SIZE - 1) & GPU_PAGE_MASK;
-#else
-		ULWord64 rdmaAlignedLen = address + size - rdmaAddress;
-#endif		
 		struct nvidia_p2p_page_table* rdmaPage = NULL;
 		int ret;
 
