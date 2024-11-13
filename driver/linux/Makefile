@@ -45,7 +45,7 @@ ifdef NVIDIA_RDMA
 
 # Find the nv-p2p.h include file path.
 ifeq ($(NVIDIA_SRC_DIR),)
-	NVIDIA_SRC_DIR := $(shell find /usr/src/nvidia-* -name nv-p2p.h 2>/dev/null|head -1|xargs dirname 2>/dev/null)
+	NVIDIA_SRC_DIR := $(shell find /usr/src/nvidia* -name nv-p2p.h 2>/dev/null|head -1|xargs dirname 2>/dev/null)
 endif
 ifeq ($(NVIDIA_SRC_DIR),)
 	NVIDIA_SRC_DIR := $(shell find /usr/src/linux-* -name nv-p2p.h 2>/dev/null|head -1|xargs dirname 2>/dev/null)
