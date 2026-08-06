@@ -1612,6 +1612,14 @@ int ntv2_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigne
 			case NTV2_TYPE_SDISTATS:
 				{
 					NTV2Buffer * pInStatistics = &((NTV2SDIInStatistics*)pMessage)->mInStatistics;
+
+					//	Check for buffer overrun
+					if (pInStatistics->fByteCount > PAGE_SIZE)
+					{
+						returnCode = -ENOMEM;
+						goto messageError;
+					}
+
 					if(copy_from_user((void*) pOutBuff,
 									  (const void*)(pInStatistics->fUserSpacePtr),
 									  pInStatistics->fByteCount))
