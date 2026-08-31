@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
 	{
 		signal(SIGINT, SignalHandler);
 
-		strcpy(s_LogFileName, "regio.log");
+		snprintf(s_LogFileName, sizeof(s_LogFileName), "%s", "regio.log");
 
 		int iArg = 1;
 		while(iArg < argc)
@@ -205,7 +205,7 @@ int main(int argc, char* argv[])
 					{
 						if(argv[iArg][2] != '\0')
                         {
-							strcpy(s_LogFileName, &argv[iArg][2]);
+							snprintf(s_LogFileName, sizeof(s_LogFileName), "%s", &argv[iArg][2]);
 						}
 						s_bLog = true;
 						break;

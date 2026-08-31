@@ -297,7 +297,7 @@ AJAMemory::AllocateShared(size_t* pMemorySize, const char* pShareName, bool glob
 #else	 
 	// Mac and Linux
 	{
-		newData.fileDescriptor = shm_open (name.c_str(),  O_CREAT|O_RDWR,  S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+		newData.fileDescriptor = shm_open (name.c_str(), O_CREAT|O_RDWR, S_IRUSR|S_IWUSR);
 		if (newData.fileDescriptor < 0)
 		{
 			syslog(LOG_ERR, "AJAMemory::AllocateShared -- shm_open failed");
@@ -307,8 +307,8 @@ AJAMemory::AllocateShared(size_t* pMemorySize, const char* pShareName, bool glob
 		bool needsTruncate = false;
 #if defined(AJA_LINUX)
 		needsTruncate = true;
-		// on Linux shm_open() doesn't set S_IROTH|S_IWOTH, so use fchmod()
-		fchmod (newData.fileDescriptor,	 S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+		// Restrict existing shared-memory objects that may have broader permissions.
+		fchmod (newData.fileDescriptor, S_IRUSR|S_IWUSR);
 #else
 		// need this on Mac, see:
 		// http://stackoverflow.com/questions/25502229/ftruncate-not-working-on-posix-shared-memory-in-mac-os-x#25510361

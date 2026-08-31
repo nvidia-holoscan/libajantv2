@@ -4211,6 +4211,11 @@ OemBeginAutoCirculateTransfer_Ex (ULWord deviceNumber,
 		ULWord			byteCount = pTransferStruct->acOutputTimeCodes.fByteCount;
 
 		memset(inTCArray, 0, sizeof(inTCArray));
+		if (byteCount > sizeof(inTCArray))
+		{
+			printk("OemBeginAutoCirculateTransfer_Ex timecode byte count exceeds buffer size\n");
+			byteCount = sizeof(inTCArray);
+		}
 		if (byteCount && pTransferStruct->acOutputTimeCodes.fUserSpacePtr)
 		{
 			if (copy_from_user((void *)inTCArray, (const void *)pTransferStruct->acOutputTimeCodes.fUserSpacePtr, byteCount))
