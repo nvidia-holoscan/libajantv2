@@ -2663,8 +2663,18 @@ void dmaPageRootFree(ULWord deviceNumber, PDMA_PAGE_BUFFER pBuffer)
 static int dmaPageBufferInit(ULWord deviceNumber, PDMA_PAGE_BUFFER pBuffer,
 							 ULWord numPages, bool rdma)
 {
+	size_t pageListSize;
+	size_t sgListSize;
+
 	if ((pBuffer == NULL) || (numPages == 0))
 		return -EINVAL;
+
+	if ((numPages > ((size_t)-1) / sizeof(struct page *)) ||
+		(numPages > ((size_t)-1) / sizeof(struct scatterlist)))
+		return -EOVERFLOW;
+
+	pageListSize = (size_t)numPages * sizeof(struct page *);
+	sgListSize = (size_t)numPages * sizeof(struct scatterlist);
 	
 	memset(pBuffer, 0, sizeof(DMA_PAGE_BUFFER));
 	INIT_LIST_HEAD(&pBuffer->bufferEntry);
@@ -2676,18 +2686,18 @@ static int dmaPageBufferInit(ULWord deviceNumber, PDMA_PAGE_BUFFER pBuffer,
 	}
 	
 	// alloc page list
-	pBuffer->pPageList = kmalloc(numPages * sizeof(struct page*), GFP_KERNEL);
+	pBuffer->pPageList = kmalloc(pageListSize, GFP_KERNEL);
 	if (pBuffer->pPageList == NULL)
 	{
 		NTV2_MSG_ERROR("%s%d: dmaPageBufferInit allocate page buffer failed  numPages %d\n",
 					   DMA_MSG_DEVICE, numPages);
 		return -ENOMEM;
 	}
-	memset(pBuffer->pPageList, 0, sizeof(struct page *) * numPages);
+	memset(pBuffer->pPageList, 0, pageListSize);
 	pBuffer->pageListSize = numPages;
 	
 	// alloc scatter list
-	pBuffer->pSgList = vmalloc(numPages * sizeof(struct scatterlist));
+	pBuffer->pSgList = vmalloc(sgListSize);
 	if (pBuffer->pSgList == NULL)
 	{
 		NTV2_MSG_ERROR("%s%d: dmaPageBufferInit allocate scatter buffer failed  numPages %d\n",
