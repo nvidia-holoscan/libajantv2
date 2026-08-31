@@ -2034,6 +2034,7 @@ messageError:
 			int returnCode = -EFAULT;
 			HevcMessageHeader messageHeader;
 			HevcMessageHeader *pMessageBuffer;
+			ULWord expectedSize = 0;
 
 			if (pNTV2Params->_DeviceID != DEVICE_ID_CORVIDHEVC) return -EFAULT;
 
@@ -2048,9 +2049,32 @@ messageError:
 			{
 				return -EFAULT;
 			}
-			if (messageHeader.size == 0)
+			switch (messageHeader.type)
 			{
-				return -EFAULT;
+			case Hevc_MessageId_Info:
+				expectedSize = sizeof(HevcMessageInfo);
+				break;
+			case Hevc_MessageId_Register:
+				expectedSize = sizeof(HevcMessageRegister);
+				break;
+			case Hevc_MessageId_Command:
+				expectedSize = sizeof(HevcMessageCommand);
+				break;
+			case Hevc_MessageId_Transfer:
+				expectedSize = sizeof(HevcMessageTransfer);
+				break;
+			case Hevc_MessageId_Status:
+				expectedSize = sizeof(HevcMessageStatus);
+				break;
+			case Hevc_MessageId_Debug:
+				expectedSize = sizeof(HevcMessageDebug);
+				break;
+			default:
+				return -EINVAL;
+			}
+			if (messageHeader.size != expectedSize)
+			{
+				return -EINVAL;
 			}
 
 			// get the entire message
